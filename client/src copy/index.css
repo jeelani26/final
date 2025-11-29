@@ -1,0 +1,53 @@
+/* Import a professional font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif; /* Use the new font */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Professional Background: A subtle dark gradient */
+  background-color: #121212;
+  background-image: linear-gradient(145deg, #1f1f1f 25%, #121212 100%);
+  color: rgba(255, 255, 255, 0.87);
+  min-height: 100vh;
+}
+
+/* Add some style to the main header */
+header h1 {
+  font-weight: 300; /* Make the main title look lighter */
+  font-size: 2.5rem;
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #333;
+  margin-bottom: 40px;
+}
+
+/* Card and Form Styling with Hover Effects */
+.course-card, .admin-form, .login-box {
+  border: 1px solid #333;
+  border-radius: 8px;
+  background-color: #1e1e1e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  
+  /* Smooth transition for the hover effect */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.course-card:hover, .admin-form:hover, .login-box:hover {
+  /* Make the card "lift up" on hover */
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* Button Styling with Hover Effects */
+button {
+  transition: background-color 0.3s ease, transform 0.2s ease !important;
+}
+
+button:hover {
+  /* Slightly change brightness and scale on hover */
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}

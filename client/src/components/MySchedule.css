@@ -1,0 +1,65 @@
+/* --- FullCalendar Dark Theme Overrides --- */
+
+:root {
+  --fc-border-color: rgba(255, 255, 255, 0.12); /* Subtle grid lines */
+  --fc-page-bg-color: transparent; /* Let the Paper background show through */
+  --fc-neutral-bg-color: rgba(255, 255, 255, 0.05); /* Header background */
+  --fc-today-bg-color: rgba(144, 202, 249, 0.08); /* Highlight for today */
+  --fc-list-event-hover-bg-color: rgba(255, 255, 255, 0.05);
+}
+
+.fc {
+  font-family: 'Roboto', sans-serif; /* Match the rest of the app */
+  color: rgba(255, 255, 255, 0.87);
+}
+
+/* Header Cells (Monday, Tuesday...) */
+.fc-col-header-cell {
+  background-color: var(--fc-neutral-bg-color);
+  padding: 12px 0;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  border-bottom: none !important;
+}
+
+/* Time Axis (8am, 9am...) */
+.fc-timegrid-slot-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  vertical-align: middle;
+}
+
+/* The Events (The course blocks) */
+.fc-event {
+  border: none !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  padding: 2px 4px;
+  font-size: 0.85rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.fc-event:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  z-index: 5;
+}
+
+/* Remove the scrollbar if not needed, or style it */
+.fc-scroller::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.fc-scroller::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+/* Hide the "all day" slot if it's still showing */
+.fc-timegrid-allday {
+    display: none !important;
+}
