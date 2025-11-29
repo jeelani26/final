@@ -1,11 +1,10 @@
-// client/src/pages/StudentDashboard.jsx
-import React, { useState, useContext, useEffect, useMemo } from 'react';
+import React, { useContext, useEffect, useState, useMemo } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
-import { Box, Button, Typography, Container, Stack, Paper } from '@mui/material';
-import { BookOpen, Clock } from 'lucide-react';
-import axios from 'axios';
-import MySchedule from '../components/MySchedule.jsx';
+import { Box, Button, Typography, Container, Stack, Divider, Paper } from '@mui/material';
 import CourseList from '../components/CourseList.jsx';
+import MySchedule from '../components/MySchedule.jsx';
+import axios from 'axios';
+import { BookOpen, Clock } from 'lucide-react'; // Using Lucide icons as per friend's design
 
 const StudentDashboard = () => {
     const { user, logout } = useContext(AuthContext);
@@ -13,14 +12,20 @@ const StudentDashboard = () => {
     const [myCourses, setMyCourses] = useState([]);
     const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-    useEffect(() => {
+    // We need to fetch the enrolled courses here to pass to both components
+    const fetchMySchedule = async () => {
         if (user) {
-            const fetchMySchedule = async () => {
+            try {
                 const res = await axios.get(`${API_URL}/api/courses/my-schedule/${user.id}`);
                 setMyCourses(res.data);
-            };
-            fetchMySchedule();
+            } catch (error) {
+                console.error("Failed to fetch schedule:", error);
+            }
         }
+    };
+
+    useEffect(() => {
+        fetchMySchedule();
     }, [user, API_URL]);
 
     const totalCredits = useMemo(() => myCourses.reduce((sum, course) => sum + course.credits, 0), [myCourses]);
@@ -36,11 +41,11 @@ const StudentDashboard = () => {
             </Stack>
 
             <Stack direction="row" spacing={4} mb={4}>
-                <Paper elevation={2} sx={{ p: 2, textAlign: 'center' }}>
+                <Paper elevation={2} sx={{ p: 2, textAlign: 'center', minWidth: '120px' }}>
                     <Typography variant="h6">{totalCredits}</Typography>
                     <Typography variant="caption" color="text.secondary">Credits</Typography>
                 </Paper>
-                <Paper elevation={2} sx={{ p: 2, textAlign: 'center' }}>
+                <Paper elevation={2} sx={{ p: 2, textAlign: 'center', minWidth: '120px' }}>
                     <Typography variant="h6">{myCourses.length}</Typography>
                     <Typography variant="caption" color="text.secondary">Courses</Typography>
                 </Paper>
@@ -63,9 +68,12 @@ const StudentDashboard = () => {
                 </Button>
             </Stack>
 
-            {/* Main Content Area */}
             <Box>
-                {activeTab === 'browse' ? <CourseList enrolledCourses={myCourses} /> : <MySchedule enrolledCourses={myCourses} />}
+                {activeTab === 'browse' ? (
+                    <CourseList />
+                ) : (
+                    <MySchedule />
+                )}
             </Box>
         </Container>
     );

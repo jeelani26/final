@@ -3,8 +3,6 @@ import { Alert, AlertTitle, IconButton, Collapse } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 const ConflictAlert = ({ conflict, onDismiss }) => {
-    // The 'in' prop on Collapse controls the visibility with a smooth animation.
-    // The '!!conflict' syntax is a shortcut to convert the conflict object (or null) to a boolean (true/false).
     return (
         <Collapse in={!!conflict}>
             <Alert
@@ -14,7 +12,7 @@ const ConflictAlert = ({ conflict, onDismiss }) => {
                         aria-label="close"
                         color="inherit"
                         size="small"
-                        onClick={onDismiss} // This calls the function to hide the alert
+                        onClick={onDismiss}
                     >
                         <CloseIcon fontSize="inherit" />
                     </IconButton>
@@ -22,7 +20,6 @@ const ConflictAlert = ({ conflict, onDismiss }) => {
                 sx={{ mb: 2, borderRadius: '8px' }}
             >
                 <AlertTitle>Schedule Conflict Detected</AlertTitle>
-                {/* We display the specific message received from the backend */}
                 {conflict?.message}
             </Alert>
         </Collapse>

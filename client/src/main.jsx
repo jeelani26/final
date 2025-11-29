@@ -1,16 +1,12 @@
-// client/src/main.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
-
-// MUI Imports
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
-// Create a dark theme for MUI
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
@@ -19,7 +15,8 @@ const darkTheme = createTheme({
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    {/* Add the basename prop here */}
+    <BrowserRouter basename="/final">
       <AuthProvider>
         <ThemeProvider theme={darkTheme}>
           <CssBaseline />

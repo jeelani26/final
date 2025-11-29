@@ -8,6 +8,7 @@ const courseSchema = new Schema({
     credits: { type: Number, required: true },
     department: { type: String, required: true },
     room: { type: String, required: true },
+    year: { type: Number, required: true, enum: [1, 2, 3, 4] }, // NEW: Year field
     schedule: [{
         day: { type: String, required: true },
         startTime: { type: String, required: true },

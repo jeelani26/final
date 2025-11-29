@@ -14,7 +14,7 @@ import FunctionsIcon from '@mui/icons-material/Functions';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import AdminCourseManager from '../components/AdminCourseManager.jsx';
 
-// THIS IS THE COMPONENT THAT WAS MISSING
+// StatCard component
 const StatCard = ({ title, value, icon, color }) => (
     <Paper elevation={3} sx={{ p: 3, display: 'flex', alignItems: 'center', borderRadius: '12px' }}>
         <Box sx={{ mr: 2, color: color }}>{icon}</Box>
@@ -38,7 +38,7 @@ const AdminDashboard = () => {
         try {
             const [statsRes, coursesRes, regsRes] = await Promise.all([
                 axios.get(`${API_URL}/api/admin/stats`),
-                axios.get(`${API_URL}/api/courses`),
+                axios.get(`${API_URL}/api/courses`), // Get all courses for admin
                 axios.get(`${API_URL}/api/admin/registrations`)
             ]);
             setStats(statsRes.data);
@@ -51,13 +51,23 @@ const AdminDashboard = () => {
 
     const handleTabChange = (event, newValue) => { setActiveTab(newValue); };
 
-    const handleDelete = async (courseId) => {
+    const handleDeleteCourse = async (courseId) => {
         if (window.confirm("Are you sure you want to delete this course?")) {
             try {
                 await axios.delete(`${API_URL}/api/courses/${courseId}`);
                 alert('Course deleted successfully!');
                 fetchData();
             } catch (error) { alert(`Failed to delete course: ${error.response?.data || 'Server error'}`); }
+        }
+    };
+
+    const handleRemoveRegistration = async (studentId, courseId) => {
+         if (window.confirm("Are you sure you want to remove this student's registration?")) {
+            try {
+                await axios.post(`${API_URL}/api/courses/drop`, { studentId, courseId });
+                alert('Registration removed successfully!');
+                fetchData();
+            } catch (error) { alert(`Failed to remove registration: ${error.response?.data || 'Server error'}`); }
         }
     };
 
@@ -92,9 +102,9 @@ const AdminDashboard = () => {
                             <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenModal}>Add Course</Button>
                         </Stack>
                         <TableContainer component={Paper}>
-                            <Table><TableHead><TableRow><TableCell>Course</TableCell><TableCell>Instructor</TableCell><TableCell>Enrollment</TableCell><TableCell>Status</TableCell><TableCell align="right">Actions</TableCell></TableRow></TableHead>
+                            <Table><TableHead><TableRow><TableCell>Course</TableCell><TableCell>Year</TableCell><TableCell>Instructor</TableCell><TableCell>Enrollment</TableCell><TableCell>Status</TableCell><TableCell align="right">Actions</TableCell></TableRow></TableHead>
                                 <TableBody>
-                                    {courses.map((course) => (<TableRow key={course._id}><TableCell>{course.courseCode}: {course.title}</TableCell><TableCell>{course.instructor}</TableCell><TableCell>{course.enrolledStudents.length} / {course.capacity}</TableCell><TableCell><Chip label={course.enrolledStudents.length >= course.capacity ? "Full" : "Available"} color={course.enrolledStudents.length >= course.capacity ? "error" : "success"} /></TableCell><TableCell align="right"><IconButton color="error" onClick={() => handleDelete(course._id)}><DeleteIcon /></IconButton></TableCell></TableRow>))}
+                                    {courses.map((course) => (<TableRow key={course._id}><TableCell>{course.courseCode}: {course.title}</TableCell><TableCell>{course.year}</TableCell><TableCell>{course.instructor}</TableCell><TableCell>{course.enrolledStudents.length} / {course.capacity}</TableCell><TableCell><Chip label={course.enrolledStudents.length >= course.capacity ? "Full" : "Available"} color={course.enrolledStudents.length >= course.capacity ? "error" : "success"} /></TableCell><TableCell align="right"><IconButton color="error" onClick={() => handleDeleteCourse(course._id)}><DeleteIcon /></IconButton></TableCell></TableRow>))}
                                 </TableBody>
                             </Table>
                         </TableContainer>
@@ -103,9 +113,9 @@ const AdminDashboard = () => {
 
                 {activeTab === 1 && (
                     <TableContainer component={Paper} sx={{ mt: 4 }}>
-                        <Table><TableHead><TableRow><TableCell>Student</TableCell><TableCell>Course</TableCell><TableCell>Status</TableCell></TableRow></TableHead>
+                        <Table><TableHead><TableRow><TableCell>Student</TableCell><TableCell>Course</TableCell><TableCell>Status</TableCell><TableCell align="right">Actions</TableCell></TableRow></TableHead>
                             <TableBody>
-                                {registrations.map((reg) => (<TableRow key={reg.id}><TableCell>{reg.studentName}</TableCell><TableCell>{reg.courseCode}: {reg.courseTitle}</TableCell><TableCell><Chip label={reg.status} color="success" /></TableCell></TableRow>))}
+                                {registrations.map((reg) => (<TableRow key={reg.id}><TableCell>{reg.studentName}</TableCell><TableCell>{reg.courseCode}: {reg.courseTitle}</TableCell><TableCell><Chip label={reg.status} color="success" /></TableCell><TableCell align="right"><IconButton color="warning" onClick={() => handleRemoveRegistration(reg.studentId, reg.courseId)}><DeleteIcon /></IconButton></TableCell></TableRow>))}
                             </TableBody>
                         </Table>
                     </TableContainer>
@@ -113,7 +123,7 @@ const AdminDashboard = () => {
 
                 <Dialog open={isModalOpen} onClose={handleCloseModal} maxWidth="md" fullWidth>
                     <DialogTitle>Add New Course</DialogTitle>
-                    <DialogContent><AdminCourseManager /></DialogContent>
+                    <DialogContent><AdminCourseManager onClose={handleCloseModal} /></DialogContent>
                 </Dialog>
             </Box>
         </Container>

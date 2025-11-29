@@ -1,36 +1,57 @@
 const router = require('express').Router();
 const Course = require('../models/Course');
 
-// GET all courses
+// GET all courses (NOW FILTERS BY YEAR)
 router.get('/', async (req, res) => {
     try {
-        const courses = await Course.find();
+        const { year } = req.query;
+        let filter = {};
+        if (year) {
+            filter.year = parseInt(year, 10);
+        }
+        const courses = await Course.find(filter);
         res.json(courses);
-    } catch (err) { res.status(400).json('Error: ' + err); }
-});
-
-// POST (Admin): Add new course
-router.post('/add', async (req, res) => {
-    try {
-        // This creates a new course document from the entire form body
-        const newCourse = new Course(req.body); 
-        await newCourse.save();
-        res.status(201).json('Course added!');
     } catch (err) {
-        // If there's an error, log it to the backend terminal
-        console.error("Error adding course:", err); 
         res.status(400).json('Error: ' + err.message);
     }
 });
 
-// POST (Student): Register for a course with conflict check
+// GET courses for a specific student
+router.get('/my-schedule/:studentId', async (req, res) => {
+    try {
+        const studentId = req.params.studentId;
+        const enrolledCourses = await Course.find({ enrolledStudents: studentId });
+        res.json(enrolledCourses);
+    } catch (err) {
+        res.status(400).json('Error: ' + err.message);
+    }
+});
+
+// --- THIS IS THE MISSING ROUTE TO ADD ---
+// POST (Admin): Add new course
+router.post('/add', async (req, res) => {
+    try {
+        const newCourse = new Course(req.body);
+        await newCourse.save();
+        res.status(201).json('Course added!');
+    } catch (err) {
+        console.error("Error adding course:", err.message); 
+        res.status(400).json('Error: ' + err.message);
+    }
+});
+// --- END OF MISSING ROUTE ---
+
+// POST (Student): Register for a course (NOW WITH CONFLICT DETECTION)
 router.post('/register', async (req, res) => {
     try {
         const { studentId, courseId } = req.body;
-        const courseToRegister = await Course.findById(courseId).lean();
-        const studentCourses = await Course.find({ enrolledStudents: studentId }).lean();
+        const courseToRegister = await Course.findById(courseId);
+        if (!courseToRegister) {
+            return res.status(404).json('Error: Course not found.');
+        }
+        const studentCourses = await Course.find({ enrolledStudents: studentId });
 
-        // --- Conflict Detection Logic ---
+        // Conflict Detection Logic
         for (const enrolledCourse of studentCourses) {
             for (const enrolledSlot of enrolledCourse.schedule) {
                 for (const newSlot of courseToRegister.schedule) {
@@ -39,55 +60,39 @@ router.post('/register', async (req, res) => {
                         const existingEnd = parseInt(enrolledSlot.endTime.replace(':', ''));
                         const newStart = parseInt(newSlot.startTime.replace(':', ''));
                         const newEnd = parseInt(newSlot.endTime.replace(':', ''));
-
-                        // Check for time overlap
                         if (Math.max(existingStart, newStart) < Math.min(existingEnd, newEnd)) {
-                            // Conflict found! Return a specific error.
-                            return res.status(409).json(`Time conflict between ${enrolledCourse.courseCode} and ${courseToRegister.courseCode} on ${newSlot.day}.`);
+                            const conflictMessage = `Time conflict detected: ${newSlot.day} ${newSlot.startTime}-${newSlot.endTime} (${courseToRegister.courseCode}) clashes with ${enrolledCourse.courseCode}.`;
+                            return res.status(409).json(conflictMessage); // 409 Conflict
                         }
                     }
                 }
             }
         }
-
-        // If no conflict, proceed with registration
-        await Course.updateOne({ _id: courseId }, { $addToSet: { enrolledStudents: studentId } });
+        courseToRegister.enrolledStudents.push(studentId);
+        await courseToRegister.save();
         res.json('Registration successful!');
-
     } catch (err) {
         res.status(400).json('Error: ' + err.message);
     }
 });
 
-// GET courses for a specific student (PASTED IN THE CORRECT PLACE)
-router.get('/my-schedule/:studentId', async (req, res) => {
-    try {
-        const studentId = req.params.studentId;
-        const enrolledCourses = await Course.find({ enrolledStudents: studentId });
-        res.json(enrolledCourses);
-    } catch (err) {
-        res.status(400).json('Error: ' + err);
-    }
-});
 // POST (Student): Drop a course
 router.post('/drop', async (req, res) => {
     try {
         const { studentId, courseId } = req.body;
         const course = await Course.findById(courseId);
-
         if (!course) {
             return res.status(404).json('Course not found.');
         }
-
-        // Remove the studentId from the enrolledStudents array
         course.enrolledStudents.pull(studentId);
         await course.save();
-
         res.json('Successfully dropped the course!');
     } catch (err) {
         res.status(400).json('Error: ' + err.message);
     }
 });
+
+// DELETE a course by ID (Admin)
 router.delete('/:id', async (req, res) => {
     try {
         const course = await Course.findByIdAndDelete(req.params.id);

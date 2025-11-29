@@ -18,14 +18,26 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const user = await User.findOne({ username: req.body.username });
-        if (!user) return res.status(400).json("Invalid credentials");
+        if (!user) {
+            return res.status(400).json("Invalid credentials");
+        }
 
         const validated = await bcrypt.compare(req.body.password, user.password);
-        if (!validated) return res.status(400).json("Invalid credentials");
+        if (!validated) {
+            return res.status(400).json("Invalid credentials");
+        }
 
-        const token = jwt.sign({ id: user._id, role: user.role }, 'secretkey');
+        // --- THIS IS THE FIX ---
+        // We must include user.username in the token payload
+        const token = jwt.sign(
+            { id: user._id, role: user.role, username: user.username }, 
+            'secretkey' // Make sure to use a strong, secret key
+        );
+
         res.json({ token, user: { id: user._id, username: user.username, role: user.role } });
-    } catch (err) { res.status(500).json(err); }
+    } catch (err) { 
+        res.status(500).json(err); 
+    }
 });
 
 module.exports = router;
