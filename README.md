@@ -1,4 +1,6 @@
 Client - FRONTEND  ----  SERVER - BACKEND
+
+
 Online Course Selection Platform
 Project Status: Deployment Ready (MERN Stack)
 A professional web application designed to streamline the academic course registration process by automating conflict detection and providing role-based management. This project serves as a comprehensive demonstration of full-stack development principles.
